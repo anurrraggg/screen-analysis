@@ -4,68 +4,180 @@
     <meta charset="utf-8">
     <title>AI Screen Reader</title>
     <style>
+        * {
+            box-sizing: border-box;
+        }
+        
         body {
-            width: 400px;
-            padding: 20px;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            width: 420px;
+            min-height: 500px;
+            padding: 0;
             margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+        }
+        
+        .container {
+            background: white;
+            margin: 8px;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
         }
         
         .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
             text-align: center;
-            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            opacity: 0.3;
         }
         
         .header h1 {
             margin: 0;
-            font-size: 18px;
-            color: #333;
+            font-size: 20px;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header p {
+            margin: 8px 0 0 0;
+            font-size: 14px;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .content {
+            padding: 24px;
         }
         
         .input-container {
             margin-bottom: 20px;
         }
         
+        .input-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+            font-size: 14px;
+        }
+        
+        .help-icon {
+            cursor: help;
+            margin-left: 4px;
+            opacity: 0.6;
+            transition: opacity 0.2s ease;
+        }
+        
+        .help-icon:hover {
+            opacity: 1;
+        }
+        
         textarea {
             width: 100%;
-            height: 80px;
-            padding: 12px;
+            height: 100px;
+            padding: 16px;
             border: 2px solid #e1e5e9;
-            border-radius: 8px;
+            border-radius: 12px;
             font-size: 14px;
             resize: vertical;
             font-family: inherit;
-            box-sizing: border-box;
+            transition: all 0.3s ease;
+            background: #fafbfc;
         }
         
         textarea:focus {
             outline: none;
-            border-color: #4285f4;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        textarea::placeholder {
+            color: #999;
         }
         
         .button-container {
-            text-align: center;
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
         }
         
-        button {
-            background: #4285f4;
+        .btn {
+            flex: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
+            padding: 14px 20px;
+            border-radius: 12px;
             font-size: 14px;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
         
-        button:hover {
-            background: #3367d6;
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
         }
         
-        button:disabled {
-            background: #ccc;
+        .btn:hover::before {
+            left: 100%;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn:disabled {
+            background: #e1e5e9;
             cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn:disabled::before {
+            display: none;
+        }
+        
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #667eea;
+            border: 2px solid #e1e5e9;
+        }
+        
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
         }
         
         .loading {
@@ -76,14 +188,14 @@
         }
         
         .spinner {
-            border: 2px solid #f3f3f3;
-            border-top: 2px solid #4285f4;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
             border-radius: 50%;
-            width: 20px;
-            height: 20px;
+            width: 24px;
+            height: 24px;
             animation: spin 1s linear infinite;
             display: inline-block;
-            margin-right: 8px;
+            margin-right: 12px;
         }
         
         @keyframes spin {
@@ -93,23 +205,40 @@
         
         .answer-container {
             margin-top: 20px;
-            padding: 16px;
+            padding: 20px;
             background: #f8f9fa;
-            border-radius: 8px;
-            border-left: 4px solid #4285f4;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
             display: none;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         
         .answer-container h3 {
-            margin: 0 0 10px 0;
+            margin: 0 0 12px 0;
             color: #333;
             font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
         .answer-text {
             color: #555;
-            line-height: 1.5;
+            line-height: 1.6;
             white-space: pre-wrap;
+            font-size: 14px;
         }
         
         .error {
@@ -124,29 +253,161 @@
         .error .answer-text {
             color: #991b1b;
         }
+        
+        .success {
+            background: #f0f9ff;
+            border-left-color: #10b981;
+        }
+        
+        .success h3 {
+            color: #10b981;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        
+        .action-btn {
+            background: white;
+            border: 1px solid #e1e5e9;
+            color: #666;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .action-btn:hover {
+            background: #f8f9fa;
+            color: #333;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-success {
+            background: #10b981;
+        }
+        
+        .status-error {
+            background: #dc2626;
+        }
+        
+        .settings-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        
+        .settings-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: rotate(90deg);
+        }
+        
+        .history-container {
+            margin-top: 16px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .history-item {
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+        
+        .history-item:hover {
+            background: #e9ecef;
+            border-color: #667eea;
+        }
+        
+        .history-question {
+            font-weight: 500;
+            color: #333;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+        
+        .history-answer {
+            color: #666;
+            font-size: 12px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>AI Screen Reader</h1>
-    </div>
-    
-    <div class="input-container">
-        <textarea id="questionInput" placeholder="Ask a question about this page..."></textarea>
-    </div>
-    
-    <div class="button-container">
-        <button id="askButton">Get Answer</button>
-    </div>
-    
-    <div class="loading" id="loading">
-        <div class="spinner"></div>
-        Analyzing page content...
-    </div>
-    
-    <div class="answer-container" id="answerContainer">
-        <h3 id="answerTitle">Answer</h3>
-        <div class="answer-text" id="answerText"></div>
+    <div class="container">
+        <div class="header">
+            <button class="settings-btn" id="settingsBtn" title="Settings">⚙️</button>
+            <h1>AI Screen Reader</h1>
+            <p>Ask questions about any webpage</p>
+        </div>
+        
+        <div class="content">
+            <div class="input-container">
+                <label class="input-label" for="questionInput">
+                    What would you like to know?
+                    <span class="help-icon" title="Keyboard shortcuts: Enter to ask, Ctrl+S for settings, Ctrl+C to copy answer, F1 for help">❓</span>
+                </label>
+                <textarea id="questionInput" placeholder="Ask a question about this page... (e.g., 'What is the main topic of this page?', 'Summarize the key points', 'What are the prices shown?')"></textarea>
+            </div>
+            
+            <div class="button-container">
+                <button class="btn" id="askButton">
+                    <span id="buttonText">Get Answer</span>
+                </button>
+                <button class="btn btn-secondary" id="clearButton">Clear</button>
+            </div>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <span id="loadingText">Analyzing page content...</span>
+            </div>
+            
+            <div class="answer-container" id="answerContainer">
+                <h3 id="answerTitle">
+                    <span class="status-indicator" id="statusIndicator"></span>
+                    <span id="answerTitleText">Answer</span>
+                </h3>
+                <div class="answer-text" id="answerText"></div>
+                <div class="action-buttons" id="actionButtons" style="display: none;">
+                    <button class="action-btn" id="copyBtn">📋 Copy</button>
+                    <button class="action-btn" id="newQuestionBtn">🔄 New Question</button>
+                </div>
+            </div>
+            
+            <div class="history-container" id="historyContainer" style="display: none;">
+                <h4 style="margin: 0 0 12px 0; color: #666; font-size: 14px;">Recent Questions</h4>
+                <div id="historyList"></div>
+            </div>
+        </div>
     </div>
 
     <script src="popup.js"></script>
