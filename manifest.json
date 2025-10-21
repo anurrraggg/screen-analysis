@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "AI Screen Answer Extension",
+  "version": "1.0",
+  "description": "Get concise AI answers based on page text and screenshot.",
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "icons/icon16.jpg"
+  },
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://generativelanguage.googleapis.com/*"
+  ],
+  "background": {
+    "service_worker": "service-worker.js"
+  }
+}
